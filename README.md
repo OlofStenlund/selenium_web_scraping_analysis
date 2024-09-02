@@ -1,2 +1,12 @@
 # selenium_web_scraping_analysis
+
 Uses Selenium to scrape data from https://arbetsformedlingen.se/platsbanken, and then performas data analysis on the results.
+
+\*\*TODO
+~~1: Instead of storing the results in a list and performing anlysis on that list, save everythinG in a csv file, and then further analysis can be done in several stages. This stores the actual data as well. <br>~~
+~~2: Get other info, such as location (city, län), experience level, employer, etc.<br>~~
+~~3: function "check_next" seems to not be working<br>~~
+~~4: Add ID-column~~
+~~5: Make sure that the scraper does not fetch URLs that are allready in the dataset. Since URLs are allways in the same order, this can be done by simply taking the last URL added to the continous-DF and break when tha URL is encountered.~~
+6: Perform search for specific qualifications in the add texts. This will be handeled in qualification_analysis.py and the results will be stored in a separate DF.
+7: Perform analysis using pandas et al.
