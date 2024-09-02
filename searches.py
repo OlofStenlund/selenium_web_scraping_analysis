@@ -1,1 +1,1 @@
-titles_list = ["Data Scientist", "Data Engineer", "Data Anlyst", "Dataanalytiker"]
+titles_list = ["Data Scientist", "Data Engineer", "Data Analyst", "Dataanalytiker"]
