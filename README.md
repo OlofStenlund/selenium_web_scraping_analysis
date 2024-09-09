@@ -10,3 +10,4 @@ Uses Selenium to scrape data from https://arbetsformedlingen.se/platsbanken, and
 ~~5: Make sure that the scraper does not fetch URLs that are allready in the dataset. Since URLs are allways in the same order, this can be done by simply taking the last URL added to the continous-DF and break when tha URL is encountered.~~
 6: Perform search for specific qualifications in the add texts. This will be handeled in qualification_analysis.py and the results will be stored in a separate DF.
 7: Perform analysis using pandas et al.
+8: the funtion retrieve_urls_from_page() tried to filter the URLS but does not do this. Remove this attempt and make it so that either 1: the urls are filtered in the function by passing a list of all URLS from the continuous table, or 2: the urls are all fetched and filtered in the main function. The second option is probably preferable, as one might want to get all the URLS in the future. Maybe write a new function for the sorting?

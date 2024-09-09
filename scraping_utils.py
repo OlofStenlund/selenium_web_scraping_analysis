@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from pandas import DataFrame
 
 from datetime import datetime
 
@@ -13,29 +14,17 @@ import pandas as pd
 import os
 import locale
 
-def establish_driver(user_dir) -> webdriver:
+def establish_driver(user_dir: str) -> webdriver.Chrome:
+    """
+    user_dir: directory leading to user info for Chrome
+    Returns a chrome webdriver
+    """
     chrome_options = Options()
     chrome_options.add_argument(f"--user-data-dir={user_dir}")
     service = Service(executable_path="chromedriver.exe")
     driver = webdriver.Chrome(options=chrome_options, service=service)
     return driver
 
-def click_next(driver) -> bool:
-    """
-    Clicks the "Nästa" button. 
-    Returns False if button cannot be retrieved
-    """
-    pages_buttons = driver.find_elements(By.TAG_NAME, "digi-button")
-    for i in pages_buttons:
-        try:
-            if i.text == "Nästa":
-                i.click()
-                time.sleep(10)
-                break
-        except:
-            # break
-            print("Failed in retireving buttons")
-            return False
 
 def check_next(driver) -> bool:
     """
@@ -49,7 +38,7 @@ def check_next(driver) -> bool:
         return False
 
 
-def retrieve_urls_from_page(break_url: str, driver) -> list:
+def retrieve_urls_from_page(driver) -> list[str]:
     """
     When a page with adds has loaded, this function extracts the URLs and returns a list.
     """
@@ -59,29 +48,26 @@ def retrieve_urls_from_page(break_url: str, driver) -> list:
     # Selenium cannot simply loop through tags and keep track of everything
     urls = []
     for link in links:
-        if link == break_url:
-            break
-        else: 
-            urls.append(link.find_element(By.TAG_NAME, "a").get_attribute('href'))
-
-
-    # urls = [link.find_element(By.TAG_NAME, "a").get_attribute('href') for link in links if link != break_url]
+        urls.append(link.find_element(By.TAG_NAME, "a").get_attribute('href'))
     return urls
 
-def parse_dates(date_text: str):
+def parse_dates(date_text: str) -> pd.Timestamp:
     _date, _time = date_text.split(sep=",")
     _time = _time.split(sep="kl. ")[1]
     _time = _time.replace(".", ":")
     locale.setlocale(locale.LC_TIME, "Swedish_Sweden")
     date_object = datetime.strptime(_date, "%d %B %Y").date()
     time_object = datetime.strptime(_time, "%H:%M").time()
-    publish_datetime = datetime.combine(date_object, time_object)
+    publish_datetime = pd.to_datetime(datetime.combine(date_object, time_object))
     return publish_datetime
 
 
-def scrape_urls(urls, driver) -> list:
+def scrape_urls(urls, driver) -> list[dict]:
     """
     Looks for the job description text and returns a list with text strings.
+    urls: list of urls to scrape
+    driver: webdriver
+    -> list of dictionaries
     """
     job_info = []
     for url in urls:
@@ -143,3 +129,22 @@ def scrape_urls(urls, driver) -> list:
 
         job_info.append(job)        
     return job_info
+
+def fetch_continuous_data(SEARCH_TERM) -> tuple[bool, pd.DataFrame]:
+    try:
+        old_continuous_data = pd.read_csv(f"{SEARCH_TERM}_continuous_data.csv")
+        old_continuous_data = old_continuous_data.sort_values(by="date", ascending=False)
+        CONTINUOUS = True
+        return old_continuous_data, CONTINUOUS
+    except:
+        CONTINUOUS = False
+        return False, CONTINUOUS
+
+def fetch_old_snapshot(SEARCH_TERM) -> tuple[bool, pd.DataFrame]:
+    try:
+        old_snapshot_data = pd.read_csv(f"{SEARCH_TERM}_snapshot_data.csv")
+        SNAPSHOT = True
+        return old_snapshot_data, SNAPSHOT
+    except:
+        SNAPSHOT = False
+        return False, False
