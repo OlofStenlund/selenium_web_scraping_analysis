@@ -6,15 +6,16 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from datetime import datetime
-
 import time
 import pandas as pd
 import os
 import locale
+from datetime import datetime
 
 from searches import titles_list
 import scraping_utils as su
+from analysis_utils import find_old_qual_ids, find_qualifications
+from qualifications import QUALIFICATIONS
 
 # Define some terms
 USER_DIR = r"C:\Users\olofs\AppData\Local\Google\Chrome\User Data"
@@ -114,3 +115,11 @@ for title in titles_list:
     else:
         new_df_rows.to_csv(f"{SEARCH_TERM}_continuous_data.csv", mode="a", header=False, index=False)
 
+
+    # Update the qualifications csv-file
+    df, ids = find_qualifications(search_term=SEARCH_TERM, qualifications_list=QUALIFICATIONS)
+    try: 
+        old_df = pd.read_csv(f"qualifications_dfs/{SEARCH_TERM}_qualifications.csv")
+        df.to_csv(f"qualifications_dfs/{SEARCH_TERM}_qualifications.csv", mode="a", header=False, index=False)
+    except:
+        df.to_csv(f"qualifications_dfs/{SEARCH_TERM}_qualifications.csv", mode="a", header=True, index=False)
