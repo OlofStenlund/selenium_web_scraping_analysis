@@ -1,6 +1,7 @@
-titles_list = [
+job_titles_list = [
     "Data Scientist", 
     "Data Engineer", 
     "Data Analyst", 
-    "Dataanalytiker"
+    "Dataanalytiker",
+    "Databasadministratör"
     ]

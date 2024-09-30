@@ -1,18 +1,13 @@
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from pandas import DataFrame
-
-from datetime import datetime
-
-import time
-import pandas as pd
-import os
 import locale
+import pandas as pd
+from datetime import datetime
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 
 def establish_driver(user_dir: str) -> webdriver.Chrome:
     """
@@ -29,6 +24,7 @@ def establish_driver(user_dir: str) -> webdriver.Chrome:
 def check_next(driver) -> bool:
     """
     Checks if the 'Nästa' button exists.
+    driver: webdriver
     """
     pages_buttons = driver.find_elements(By.TAG_NAME, "digi-button")
     labels = [i.text for i in pages_buttons]
@@ -41,6 +37,7 @@ def check_next(driver) -> bool:
 def retrieve_urls_from_page(driver) -> list[str]:
     """
     When a page with adds has loaded, this function extracts the URLs and returns a list.
+    driver: webdriver
     """
     links = driver.find_elements(By.TAG_NAME, "pb-feature-search-result-card") # Returns all tags in the result container
 
@@ -52,6 +49,11 @@ def retrieve_urls_from_page(driver) -> list[str]:
     return urls
 
 def parse_dates(date_text: str) -> pd.Timestamp:
+    """
+    Parse string into a pd.Timestamp object. The string found on the website
+    has the form '11 september 2024, kl. 09:45', and thus this function reflects that.
+    date_text: str 
+    """
     _date, _time = date_text.split(sep=",")
     _time = _time.split(sep="kl. ")[1]
     _time = _time.replace(".", ":")
@@ -62,12 +64,11 @@ def parse_dates(date_text: str) -> pd.Timestamp:
     return publish_datetime
 
 
-def scrape_urls(urls, driver) -> list[dict]:
+def scrape_urls(urls: list, driver) -> list[dict]:
     """
-    Looks for the job description text and returns a list with text strings.
-    urls: list of urls to scrape
+    Looks for the job description text and returns a list with dicts.
+    urls: list
     driver: webdriver
-    -> list of dictionaries
     """
     job_info = []
     for url in urls:
@@ -130,9 +131,14 @@ def scrape_urls(urls, driver) -> list[dict]:
         job_info.append(job)        
     return job_info
 
-def fetch_continuous_data(SEARCH_TERM) -> tuple[bool, pd.DataFrame]:
+def fetch_continuous_data(job_title: str) -> tuple[pd.DataFrame, bool]:
+    """
+    All scraped data is stored in a 'continuous'-table, while the most recently scraped
+    ads are stored in a 'snapshot'-table as well. This function fetches the continuous table is it exists.
+    job_title: str, the title to look for.
+    """
     try:
-        old_continuous_data = pd.read_csv(f"{SEARCH_TERM}_continuous_data.csv")
+        old_continuous_data = pd.read_csv(f"data/ads/{job_title}_continuous_data.csv")
         old_continuous_data = old_continuous_data.sort_values(by="date", ascending=False)
         CONTINUOUS = True
         return old_continuous_data, CONTINUOUS
@@ -140,11 +146,17 @@ def fetch_continuous_data(SEARCH_TERM) -> tuple[bool, pd.DataFrame]:
         CONTINUOUS = False
         return False, CONTINUOUS
 
-def fetch_old_snapshot(SEARCH_TERM) -> tuple[bool, pd.DataFrame]:
-    try:
-        old_snapshot_data = pd.read_csv(f"{SEARCH_TERM}_snapshot_data.csv")
-        SNAPSHOT = True
-        return old_snapshot_data, SNAPSHOT
-    except:
-        SNAPSHOT = False
-        return False, False
+# def fetch_old_snapshot(search_term: str) -> tuple[bool, pd.DataFrame]:
+#     """
+#     All scraped data is stored in a 'continuous'-table, while the most recently scraped
+#     ads are stored in a 'snapshot'-table as well. This function fetches the most recent snapshot table, 
+#     if it exists.
+#     search_term: str, the title to look for.
+#     """
+#     try:
+#         old_snapshot_data = pd.read_csv(f"{search_term}_snapshot_data.csv")
+#         SNAPSHOT = True
+#         return old_snapshot_data, SNAPSHOT
+#     except:
+#         SNAPSHOT = False
+#         return False, False
