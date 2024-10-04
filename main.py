@@ -11,26 +11,22 @@ from qualifications import QUALIFICATIONS
 
 USER_DIR = r"C:\Users\olofs\AppData\Local\Google\Chrome\User Data"
 URL = "https://arbetsformedlingen.se/platsbanken/"
-
 driver = su.establish_driver(USER_DIR)
 
-for JOB_TITLE in job_titles_list:
 
-    # Open homepage
+for JOB_TITLE in job_titles_list:
+    ## 1: Get all URLS for the search
     driver.get(URL)
 
-    # wait for search window to appear
     search_window_id = "search_input"
     WebDriverWait(driver, 5).until(ec.presence_of_element_located((By.ID, search_window_id)))
     input_box = driver.find_element(By.ID, search_window_id)
     input_box.clear()
     input_box.send_keys(JOB_TITLE + Keys.ENTER)
 
-    # Wait for results to load
     search_results_cards = "card-container"
     WebDriverWait(driver, 5).until(ec.presence_of_element_located((By.CLASS_NAME, search_results_cards)))
-
-    # Gather URLs    
+  
     all_scraped_urls = []
     stay = True
     while stay:
@@ -52,7 +48,7 @@ for JOB_TITLE in job_titles_list:
         elif not su.check_next(driver):
             stay = False
 
-    # Fetch old data (if exists)
+    ## 2: Make sure only new urls are scraped
     old_continuous_data, CONTINUOUS = su.fetch_continuous_data(job_title=JOB_TITLE)
 
     if CONTINUOUS: # If old data exists, compare the old and new to extract only the new URLs
@@ -63,6 +59,7 @@ for JOB_TITLE in job_titles_list:
         new_urls = all_scraped_urls.copy()
         print(f"{JOB_TITLE}: {len(new_urls)} new adds")
 
+    ## 3: Scrape
     scraping_results = su.scrape_urls(new_urls, driver)
 
     rows_to_be_added = []       
@@ -84,15 +81,29 @@ for JOB_TITLE in job_titles_list:
     rows_to_be_added = sorted(rows_to_be_added, key=lambda x: x["date"])
     new_df_rows = pd.DataFrame(rows_to_be_added)
 
-    # Append the DF-data to csv-file
-    new_df_rows.to_csv(f"data/ads/{JOB_TITLE}_snapshot_data.csv", header=True, index=False)
+    ## 4: Append the DF-data to csv-file
+    new_df_rows.to_csv(
+        f"data/ads/{JOB_TITLE}_snapshot_data.csv", 
+        header=True, 
+        index=False
+        )
 
     if not CONTINUOUS:
-        new_df_rows.to_csv(f"data/ads/{JOB_TITLE}_continuous_data.csv", mode="a", header=True, index=False)
+        new_df_rows.to_csv(
+            f"data/ads/{JOB_TITLE}_continuous_data.csv", 
+            mode="a", 
+            header=True, 
+            index=False
+            )
     else:
-        new_df_rows.to_csv(f"data/ads/{JOB_TITLE}_continuous_data.csv", mode="a", header=False, index=False)
+        new_df_rows.to_csv(
+            f"data/ads/{JOB_TITLE}_continuous_data.csv", 
+            mode="a", 
+            header=False, 
+            index=False
+            )
 
-    # Update the qualifications csv-file
+    ## 5: Update the qualifications csv-file
     if len(new_df_rows) > 0:
         df, ids = find_qualifications(
             job_title=JOB_TITLE, 
@@ -101,7 +112,17 @@ for JOB_TITLE in job_titles_list:
             jobs_dataframe = new_df_rows
             )
         try: 
-            _ = pd.read_csv(f"data/qualifications_dfs/{JOB_TITLE}_qualifications.csv") # CHeck if DF allready exists
-            df.to_csv(f"data/qualifications_dfs/{JOB_TITLE}_qualifications.csv", mode="a", header=False, index=False)
+            _ = pd.read_csv(f"data/qualifications_dfs/{JOB_TITLE}_qualifications.csv") # Check if DF allready exists
+            df.to_csv(
+                f"data/qualifications_dfs/{JOB_TITLE}_qualifications.csv", 
+                mode="a", 
+                header=False, 
+                index=False
+                )
         except:
-            df.to_csv(f"data/qualifications_dfs/{JOB_TITLE}_qualifications.csv", mode="a", header=True, index=False)
+            df.to_csv(
+                f"data/qualifications_dfs/{JOB_TITLE}_qualifications.csv", 
+                mode="a", 
+                header=True, 
+                index=False
+                )
