@@ -16,15 +16,20 @@ def establish_driver(user_dir: str) -> webdriver.Chrome:
     """
     chrome_options = Options()
     chrome_options.add_argument(f"--user-data-dir={user_dir}")
+    chrome_options.add_argument(f"--headless")
     service = Service(executable_path="chromedriver.exe")
     driver = webdriver.Chrome(options=chrome_options, service=service)
     return driver
 
 
-def check_next(driver) -> bool:
-    """
-    Checks if the 'Nästa' button exists.
-    driver: webdriver
+def check_next(driver: webdriver.Chrome) -> bool:
+    """Checks if the 'Nästa' button exists.
+
+    Args:
+        webdriver.Chrome: Selenium webdriver. This function uses Chrome.
+
+    Returns:
+        bool: Rturns True if the 'Nästa' button exists.
     """
     pages_buttons = driver.find_elements(By.TAG_NAME, "digi-button")
     labels = [i.text for i in pages_buttons]
@@ -32,6 +37,7 @@ def check_next(driver) -> bool:
         return True
     else:
         return False
+
 
 
 def retrieve_urls_from_page(driver) -> list[str]:
@@ -146,17 +152,3 @@ def fetch_continuous_data(job_title: str) -> tuple[pd.DataFrame, bool]:
         CONTINUOUS = False
         return False, CONTINUOUS
 
-# def fetch_old_snapshot(search_term: str) -> tuple[bool, pd.DataFrame]:
-#     """
-#     All scraped data is stored in a 'continuous'-table, while the most recently scraped
-#     ads are stored in a 'snapshot'-table as well. This function fetches the most recent snapshot table, 
-#     if it exists.
-#     search_term: str, the title to look for.
-#     """
-#     try:
-#         old_snapshot_data = pd.read_csv(f"{search_term}_snapshot_data.csv")
-#         SNAPSHOT = True
-#         return old_snapshot_data, SNAPSHOT
-#     except:
-#         SNAPSHOT = False
-#         return False, False

@@ -7,7 +7,6 @@ QUALIFICATIONS = [
     "Scikit-learn",
     "Scikitlearn",
     "Keras",
-    "Tensorflow",
     "Excel",
     "SQL Server",
     "Hadoop",
