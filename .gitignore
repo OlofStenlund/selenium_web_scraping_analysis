@@ -5,3 +5,5 @@ various_code.py
 /data/ads/*
 /data/qualifications_dfs/*
 *mplstyle
+*.pyc
+__pycache__/
