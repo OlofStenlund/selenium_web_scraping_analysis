@@ -7,3 +7,4 @@ various_code.py
 *mplstyle
 *.pyc
 __pycache__/
+/.pytest_cache
